@@ -20,7 +20,7 @@ import globalError from "./middleware/errorMiddleware.js";
 
 // Routes
 import { mountRoutes } from "./routes/mountRoutes.js";
-import{webhookCheckout}from "./services/orderService.js"
+import { webhookCheckout }from "./services/orderService.js"
 
 const app = express();
 
