@@ -9,7 +9,7 @@ import { deleteOne, updateOne, createOne, getOne, getAll } from "./handlerFactor
 import ProductModel from "../models/ProductModel.js";
 import orderModel from "../models/orderModel.js";
 import cartModel from "../models/cartModel.js";
-
+import userModel from "../models/userModel.js"
 
 //@desc Add order paided in cash
 //@route POST /api/orders/cardId
@@ -148,6 +148,41 @@ export const checkOutSession = asyncHandler(async (req, res, next) => {
   res.status(200).json({ status: "Success", session });
 });
 
+const createCardOrder = async (session) => {
+  const cardId = session.client_reference_id;
+  const shippingAddress = session.metadata;
+  const orderPrise = session.amount_total / 100;
+  
+
+  const cart = await cartModel.findById(cardId);
+  const user = await cartModel.findOne({ email: session.customer_email })
+  //create order
+  //3) create the order with card method
+  const order = await orderModel.create({
+    user: user._id,
+    orderItems: cart.cartItems,
+    totalOrderPrice: orderPrise,
+    shippingAddress,
+    isPaid: true,
+    paidAt: Date.now(),
+    paymentMethodType:"onlinePayment"
+  });
+  //4)after make the order we will update i product it self ^decrement the quantity increment the sold 
+  if (order) {
+    const bulkOption = cart.cartItems.map((item) => ({
+      updateOne: {
+        filter: { _id: item.product },
+        update: { $inc: { quantity: -item.quantity, sold: item.quantity } },
+      },
+    }));
+    //update the product
+    await ProductModel.bulkWrite(bulkOption, {});
+
+    //5) clear user cart
+    await cartModel.findByIdAndDelete(cardId);
+  };
+}
+
 export const webhookCheckout = asyncHandler(async (req, res, next) => {
   let event = req.body;
 
@@ -164,6 +199,7 @@ export const webhookCheckout = asyncHandler(async (req, res, next) => {
   }
   if (event.type === checkout.session.completed) {
     console.log('Order is createing...');
+    createCardOrder(event.data.object)
   }
-  
+  res.status(200).json({received:true})
 });
