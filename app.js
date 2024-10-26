@@ -20,6 +20,7 @@ import globalError from "./middleware/errorMiddleware.js";
 
 // Routes
 import { mountRoutes } from "./routes/mountRoutes.js";
+import{webhookCheckout}from "./services/orderService.js"
 
 const app = express();
 
@@ -29,6 +30,8 @@ app.options('*', cors());
 // compress all reponse
 app.use(compression());
 
+//checkout webhook
+app.post("/webhook-checkout", express.json({ type: 'application/json' }),webhookCheckout);
 // Middlewares
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
