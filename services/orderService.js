@@ -194,6 +194,7 @@ export const webhookCheckout = asyncHandler(async (req, res, next) => {
         signature,
         process.env.STRIPE_WEBHOOK_SECRET
       );
+      console.log('Event constructed:', event);
     } catch (err) {
       return res.status(400).send(`⚠️  Webhook signature verification failed.`, err.message);
   }
