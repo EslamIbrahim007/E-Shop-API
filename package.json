@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon app.js",
-    "prod": " SET NODE_ENV = production & node app.js"
+    "start": "SET NODE_ENV = production & node app.js"
   },
   "keywords": [],
   "author": "",
@@ -40,5 +40,8 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "globals": "^15.9.0"
+  },
+  "engines": {
+    "mode": "20.15.1"
   }
 }
