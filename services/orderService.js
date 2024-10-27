@@ -26,13 +26,15 @@ export const createCashOrder = asyncHandler(async (req, res, next) => {
   //2) get order price from the cart but we check if there a coupon
   const cartPrice = userCart.totalPriceAfterCoupon ? userCart.totalPriceAfterCoupon : userCart.totalCartPrice;
   const totalOrderPrice = cartPrice + taxPrice + cardIdShippingPrice;
+
   //3) create the order with cash method
   const order = await orderModel.create({
     user: req.user._id,
     orderItems: userCart.cartItems,
     totalOrderPrice,
     shippingAddress: req.body.shippingAddress,
-  })
+  });
+
   //4)after make the order we will update i product it self ^decrement the quantity increment the sold 
   if (order) {
     const bulkOption = userCart.cartItems.map((item) => ({
@@ -41,6 +43,7 @@ export const createCashOrder = asyncHandler(async (req, res, next) => {
         update: { $inc: { quantity: -item.quantity, sold: item.quantity } },
       },
     }));
+
     //update the product
     await ProductModel.bulkWrite(bulkOption,{});
 
@@ -155,7 +158,7 @@ const createCardOrder = async (session) => {
   
 
   const cart = await cartModel.findById(cardId);
-  const user = await cartModel.findOne({ email: session.customer_email })
+  const user = await userModel.findOne({ email: session.customer_email })
   //create order
   //3) create the order with card method
   const order = await orderModel.create({
@@ -182,10 +185,11 @@ const createCardOrder = async (session) => {
     await cartModel.findByIdAndDelete(cardId);
   };
 }
-
+// @desc    This webhook will run when stripe payment success paid
+// @route   POST /webhook-checkout
+// @access  Protected/User
 export const webhookCheckout = asyncHandler(async (req, res, next) => {
-  let event = req.body;
-
+    let event = req.body;
     // Get the signature sent by Stripe
     const signature = req.headers['stripe-signature'];
     try {
