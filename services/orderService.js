@@ -197,7 +197,7 @@ export const webhookCheckout = asyncHandler(async (req, res, next) => {
     } catch (err) {
       return res.status(400).send(`⚠️  Webhook signature verification failed.`, err.message);
   }
-  if (event.type === checkout.session.completed) {
+  if (event.type === 'checkout.session.completed') {
     console.log('Order is createing...');
     createCardOrder(event.data.object)
   }
