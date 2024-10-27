@@ -38,7 +38,7 @@ if (process.env.NODE_ENV === "development") {
   console.log(`mode : ${process.env.NODE_ENV}`);
 }
 // Middleware to parse JSON bodies
-app.use(json());
+app.use(express.json());
 // Serve static files from the "uploads" directory
 app.use(express.static(path.join(__dirname, 'uploads')));
 
