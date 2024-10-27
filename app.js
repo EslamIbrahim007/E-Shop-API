@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 //
 //express: Imports the Express framework.//json: Middleware for parsing JSON bodies.
-import express, { json } from "express";
+import express from "express";
 //morgan: HTTP request logger middleware.
 import morgan from "morgan";
 //dotenv / config: Loads environment variables from a.env file.
@@ -30,8 +30,7 @@ app.options('*', cors());
 // compress all reponse
 app.use(compression());
 
-//checkout webhook
-app.post("/webhook-checkout", express.raw({ type: 'application/json' }),webhookCheckout);
+
 // Middlewares
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
@@ -42,8 +41,10 @@ app.use(express.json());
 // Serve static files from the "uploads" directory
 app.use(express.static(path.join(__dirname, 'uploads')));
 
-// Mount Routes
+//checkout webhook
+app.post("/webhook-checkout", express.raw({ type: 'application/json' }), webhookCheckout);
 
+// Mount Routes
 mountRoutes(app)
 
 
