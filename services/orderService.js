@@ -189,8 +189,24 @@ const createCardOrder = async (session) => {
 // @route   POST /webhook-checkout
 // @access  Protected/User
 export const webhookCheckout = asyncHandler(async (req, res, next) => {
+  let event = req.body;
   const signature = req.headers['stripe-signature'];
-  let event;
-  console.log(signature);
 
+  try {
+    event = stripe.webhooks.constructEvent(req.body, signature, process.env.STRIPE_WEBHOOK_SECRET);
+    console.log('Event constructed:', event);
+    console.log('Event Type:', event.type);
+  } catch (err) {
+    console.error(`⚠️  Webhook signature verification failed: ${err.message}`);
+    return res.status(400).send(`⚠️  Webhook signature verification failed: ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    console.log('Order is creating...');
+    createCardOrder(event.data.object);
+  } else {
+    console.log('Unhandled event type:', event.type);
+  }
+
+  res.status(200).json({ received: true });
 });
